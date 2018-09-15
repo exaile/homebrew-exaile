@@ -8,6 +8,7 @@ class Exaile < Formula
 
   depends_on "berkeley-db"
   depends_on "gtk+3"
+  depends_on "adwaita-icon-theme"
   #depends_on "gtk-mac-integration"
   depends_on "py2cairo"
   depends_on "pygobject3" => "with-python@2"
