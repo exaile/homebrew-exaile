@@ -16,6 +16,7 @@ class Exaile < Formula
   depends_on "gst-plugins-base"
   depends_on "gst-plugins-good"
   depends_on "gst-plugins-ugly" => :recommended
+  depends_on "gst-plugins-bad" => :recommended
 
   resource "bsddb3" do
     url "https://files.pythonhosted.org/packages/a9/f3/d8d1f8d998436256b3abcd924570d54f9508fa313c4e27bfa663f1bb72f2/bsddb3-5.3.0.tar.gz"
