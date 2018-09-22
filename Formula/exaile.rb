@@ -6,6 +6,8 @@ class Exaile < Formula
   url "https://github.com/exaile/exaile/releases/download/4.0.0-rc2/exaile-4.0.0rc2.tar.gz"
   sha256 "b57ec210ad28ad2bbbe7097fe5eb20a99d1421b3e63b80d1c823a36057a56c53"
 
+  head "https://github.com/exaile/exaile.git"
+
   depends_on "berkeley-db"
   depends_on "gtk+3"
   depends_on "adwaita-icon-theme"
@@ -69,6 +71,10 @@ class Exaile < Formula
     sha256 "328f6c3f2431be139fa54c166190d3cd4e1bae78243c7d0ace9a7be3fa3088ad"
   end
 
+  def caveats
+    "Run 'exaile-app-install' to install Exaile to the system's applications"
+  end
+
   def install
     ENV["BERKELEYDB_DIR"] = Formula["berkeley-db"].path
 
@@ -77,6 +83,58 @@ class Exaile < Formula
     
     ENV["DEFAULTARGS"] = "--no-dbus --no-hal"
     system "make", "PREFIX=#{prefix}", "PYTHON2_CMD=#{libexec}/bin/python", "install"
+
+    #
+    # Add hacky script to create an .app for Exaile
+    #
+
+    (share/"exaile/data/images").mkpath()
+    cp "data/images/exaile.icns", share/"exaile/data/images"
+
+    (bin/"exaile-app-install").write <<~APPINSTALL
+      #!/bin/bash -e
+
+      APPDIR=/Applications/Exaile.app
+      ROOT=$(dirname "$(python -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' "$0")")
+      
+      if [ "$1" == "--local" ]; then
+          APPDIR=~/Applications/Exaile.app
+      elif [ "$1" == "--help" ] || [ ! "$1" == "" ]; then
+          echo "Usage: $0 [--local]"
+          exit 1
+      fi
+      
+      rm -rf $APPDIR
+      mkdir -p $APPDIR/Contents/MacOS
+      mkdir -p $APPDIR/Contents/Resources
+      
+      echo "#!/usr/bin/env bash" > $APPDIR/Contents/MacOS/Exaile
+      echo "exec ${ROOT}/exaile \"\$@\"" >> $APPDIR/Contents/MacOS/Exaile
+      chmod +x $APPDIR/Contents/MacOS/Exaile
+      
+      cat << EOF > $APPDIR/Contents/Info.plist
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+          <key>CFBundleExecutable</key>    <string>Exaile</string>
+          <key>CFBundleSignature</key>     <string>EXAL</string>
+          <key>CFBundlePackageType</key>   <string>APPL</string>
+          <key>CFBundleVersion</key>       <string>#{version}</string>
+          <key>CFBundleIdentifier</key>    <string>org.exaile.exaile</string>
+          <key>CFBundleDisplayName</key>   <string>Exaile</string>
+          <key>CFBundleName</key>          <string>Exaile</string>
+          <key>CFBundleIconFile</key>      <string>Exaile</string>
+      </dict>
+      </plist>
+      EOF
+      
+      cp $ROOT/../share/exaile/data/images/exaile.icns $APPDIR/Contents/Resources/Exaile.icns
+      
+      echo "OK"    
+    APPINSTALL
+    (bin/"exaile-app-install").chmod(0555)
+
   end
 
 end
