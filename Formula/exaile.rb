@@ -50,36 +50,66 @@ class Exaile < Formula
     sha256 "70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
   end
 
-
   resource "pyobjc-core" do
-    url "https://files.pythonhosted.org/packages/7e/03/303a5c7f7c3d3af811eba44b32ef957e570be4d5c5b656c0b44ece6191e0/pyobjc-core-3.2.1.tar.gz"
-    sha256 "848163845921e5a61e069ea42bab06ac73278f5a09b4e9cedd6a3eac6712ff2c"
+    url "https://files.pythonhosted.org/packages/73/36/403769823a696dd8a02b5b3f74ccfa603be8575f2d5b70ba8eba73af7375/pyobjc_core-5.2-cp27-cp27m-macosx_10_9_x86_64.whl"
+    sha256 "a6f65fb313e5e1efab5c4b4591142a73af4ca52a2c39d98f540f42fc774e262e"
+    @whl = true
   end
 
   resource "pyobjc-framework-ApplicationServices" do
-    url "https://files.pythonhosted.org/packages/a1/8d/77c2b2741865a4781ae8f52e5cd802b728e705f3c7fa017e9a7866ad999e/pyobjc-framework-ApplicationServices-3.2.1.tar.gz"
-    sha256 "567bf6e2083ad557e0b3845a25c09068824dee1393d1ce07ce31c6f85b436448"
+    url "https://files.pythonhosted.org/packages/90/0d/fa04ab8ad24e3ed22d63f544a86b4ab56fee7f8cc6ceeaa27ea28235f80d/pyobjc_framework_ApplicationServices-5.2-py2.py3-none-any.whl"
+    sha256 "e6edf4cb8a988e0772ea04e0abecc41a5d97419fbfa3d5ae65a97f7d21f6610c"
+    @whl = true
   end
 
   resource "pyobjc-framework-Cocoa" do
-    url "https://files.pythonhosted.org/packages/f2/91/9a1847a442a8cd9f7e7ed183561c57b8644fd582f7ede0c5c3dc81407533/pyobjc-framework-Cocoa-3.2.1.tar.gz"
-    sha256 "8215a528b552588f0024df03ef1c5f8edfa245301888c384f5b8c231f4c89431"
+    url "https://files.pythonhosted.org/packages/22/eb/d4b1c9e519b8f36dac1f8f538b46ecf8e697bf0f96504c12a9def52a812b/pyobjc_framework_Cocoa-5.2-cp27-cp27m-macosx_10_6_intel.whl"
+    sha256 "3a2a7771e584858ee43faef08b9ca7c632c8c27a3d9e1bfd5dd1909d7c087ed8"
+    @whl = true
   end
 
   resource "pyobjc-framework-Quartz" do
-    url "https://files.pythonhosted.org/packages/dd/07/aff85c2987faa9ad16ce1761a053c8c7815b679cd7482e3fd6af07ae749f/pyobjc-framework-Quartz-3.2.1.tar.gz"
-    sha256 "328f6c3f2431be139fa54c166190d3cd4e1bae78243c7d0ace9a7be3fa3088ad"
+    url "https://files.pythonhosted.org/packages/af/c5/99c067190235ff45d0daf0b973b5575ad6cfd067c8b1e8939784f8d821cd/pyobjc_framework_Quartz-5.2-cp27-cp27m-macosx_10_6_intel.whl"
+    sha256 "4e76f444445e2561c56c43d50a0001f9a62c5d2e9f06bc2c2847768929ded89c"
+    @whl = true
   end
 
   def caveats
     "Run 'exaile-app-install' to install Exaile to the system's applications"
   end
 
+  def whl_install(targets)
+    targets = [targets] unless targets.is_a? Array
+    system libexec/"bin/pip", "install",
+                    "-v", "--no-deps", #"--no-binary", ":all:",
+                    "--ignore-installed", *targets
+  end
+
   def install
     ENV["BERKELEYDB_DIR"] = Formula["berkeley-db"].path
 
     venv = virtualenv_create(libexec)
-    venv.pip_install resources
+    resource_srcs = []
+    resource_whls = []
+
+    resources.each do |r|
+      if r.instance_variable_defined?("@whl")
+        resource_whls.push(r)
+      else
+        resource_srcs.push(r)
+      end
+    end
+
+    #
+    # hack to install wheels so users don't need xcode installed
+    #
+    
+    resource_whls.each do |t|
+      t.stage {whl_install "#{Pathname.pwd}/#{File.basename(t.url)}"} 
+    end
+
+    venv.pip_install resource_srcs
+
     
     ENV["DEFAULTARGS"] = "--no-dbus --no-hal"
     system "make", "PREFIX=#{prefix}", "PYTHON2_CMD=#{libexec}/bin/python", "install"
