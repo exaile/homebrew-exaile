@@ -3,8 +3,8 @@ class Exaile < Formula
 
   desc "Cross platform music player"
   homepage "https://www.exaile.org"
-  url "https://github.com/exaile/exaile/releases/download/4.0.0-rc3/exaile-4.0.0rc3.tar.gz"
-  sha256 "51d2caa54b399957e9e5cdf2cb9fed56ef25e7b2b4c00d8afb0e67ba72f78b37"
+  url "https://github.com/exaile/exaile/releases/download/4.0.0-rc4/exaile-4.0.0-rc4.tar.gz"
+  sha256 "f7b72e8de907131bc1ccd9d0500631af76e62aace94cf85bf63cb7e012471770"
 
   head "https://github.com/exaile/exaile.git"
 
