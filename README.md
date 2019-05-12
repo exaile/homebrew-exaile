@@ -8,8 +8,9 @@ This allows you to install Exaile via homebrew. Quick and dirty:
 Once you install Exaile, currently the only way to launch it is via
 the terminal. Just run `exaile` and it should launch.
 
-Currently installation on OSX is experimental and there are known serious
-issues. We welcome assistance with fixing these issues!
+Unfortunately, installation on OSX is experimental and GTK has known serious
+issues on OSX. In particular, drag and drop operations can cause Exaile to
+completely crash. We welcome assistance with fixing these issues!
 
 Install troubleshooting
 -----------------------
